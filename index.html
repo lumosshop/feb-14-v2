@@ -36,7 +36,6 @@
     img {
       width: 70%;
       max-width: 220px;
-      height: auto;
       margin: 1.2rem auto 1.8rem;
       display: block;
     }
@@ -54,7 +53,7 @@
       border-radius: 14px;
       border: none;
       cursor: pointer;
-      transition: transform 0.25s ease, background 0.25s ease;
+      transition: transform 0.25s ease;
       touch-action: manipulation;
     }
 
@@ -66,26 +65,12 @@
     #noBtn {
       background: #e0e0e0;
     }
-
-    /* Extra comfort on very large phones */
-    @media (min-height: 850px) {
-      h1 {
-        font-size: 1.5rem;
-      }
-      button {
-        font-size: 1.15rem;
-        padding: 1.1rem 1.8rem;
-      }
-    }
   </style>
 </head>
 <body>
   <div class="card">
-    <h1 id="question">
-      Would you give me the honor of being your valentine again?
-    </h1>
+    <h1 id="question"></h1>
 
-    <!-- Replace with your cat PNG later -->
     <img src="https://via.placeholder.com/300x300.png?text=Replace+Me" alt="placeholder" />
 
     <div class="buttons">
@@ -102,44 +87,50 @@
     let stage = 0;
     let yesScale = 1;
 
-    const questions = [
+    const text = [
+      "Would you give me the honor of being your valentine again?",
       "Are you sure?",
       "Are you 100% positive?",
       "yay im so glad i get to be your valentine 💖"
     ];
 
-    yesBtn.addEventListener("click", () => {
-      // Reset Yes button size when leaving first screen
-      if (stage === 0) {
+    function render() {
+      question.textContent = text[stage];
+
+      // Reset Yes button size on ALL confirmation screens
+      if (stage > 0) {
         yesScale = 1;
         yesBtn.style.transform = "scale(1)";
       }
 
-      if (stage < questions.length) {
-        question.textContent = questions[stage];
-        stage++;
+      // Final screen cleanup
+      if (stage === text.length - 1) {
+        yesBtn.style.display = "none";
+        noBtn.style.display = "none";
+      } else {
+        yesBtn.style.display = "inline-block";
+        noBtn.style.display = "inline-block";
+      }
+    }
 
-        if (stage === questions.length) {
-          yesBtn.style.display = "none";
-          noBtn.style.display = "none";
-        }
+    yesBtn.addEventListener("click", () => {
+      if (stage < text.length - 1) {
+        stage++;
+        render();
       }
     });
 
     noBtn.addEventListener("click", () => {
-      // First screen behavior: Yes grows
       if (stage === 0) {
         yesScale += 0.25;
         yesBtn.style.transform = `scale(${yesScale})`;
       } else {
-        // Go back one confirmation step
-        stage = Math.max(0, stage - 1);
-        question.textContent =
-          stage === 0
-            ? "Would you give me the honor of being your valentine again?"
-            : questions[stage - 1];
+        stage--;
+        render();
       }
     });
+
+    render();
   </script>
 </body>
 </html>
