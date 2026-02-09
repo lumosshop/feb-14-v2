@@ -53,7 +53,7 @@
       border-radius: 14px;
       border: none;
       cursor: pointer;
-      transition: transform 0.25s ease;
+      transition: transform 0.3s ease, opacity 0.4s ease;
       touch-action: manipulation;
     }
 
@@ -64,6 +64,26 @@
 
     #noBtn {
       background: #e0e0e0;
+    }
+
+    .reaction {
+      margin-top: 1rem;
+      font-size: 1rem;
+      color: #777;
+      min-height: 1.4em;
+      opacity: 1;
+      transition: opacity 1.2s ease;
+    }
+
+    /* Gentle pulse for Yes */
+    .pulse {
+      animation: pulse 1.6s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
     }
   </style>
 </head>
@@ -77,15 +97,19 @@
       <button id="yesBtn">Yes</button>
       <button id="noBtn">No</button>
     </div>
+
+    <div class="reaction" id="reaction"></div>
   </div>
 
   <script>
     const question = document.getElementById("question");
+    const reaction = document.getElementById("reaction");
     const yesBtn = document.getElementById("yesBtn");
     const noBtn = document.getElementById("noBtn");
 
     let stage = 0;
     let yesScale = 1;
+    let noClicks = 0;
 
     const text = [
       "Would you give me the honor of being your valentine again?",
@@ -94,16 +118,28 @@
       "yay im so glad i get to be your valentine 💖"
     ];
 
+    const sadResponses = [
+      "oh… okay.",
+      "welp.",
+      "i understand.",
+      "aw man…",
+      "that kinda hurts.",
+      "oh. okay then.",
+      "…yeah."
+    ];
+
     function render() {
       question.textContent = text[stage];
+      reaction.textContent = "";
+      reaction.style.opacity = 1;
+      noClicks = 0;
 
-      // Reset Yes button size on ALL confirmation screens
-      if (stage > 0) {
-        yesScale = 1;
-        yesBtn.style.transform = "scale(1)";
-      }
+      // Reset buttons
+      yesScale = 1;
+      yesBtn.style.transform = "scale(1)";
+      yesBtn.classList.remove("pulse");
+      noBtn.style.opacity = 1;
 
-      // Final screen cleanup
       if (stage === text.length - 1) {
         yesBtn.style.display = "none";
         noBtn.style.display = "none";
@@ -122,11 +158,30 @@
 
     noBtn.addEventListener("click", () => {
       if (stage === 0) {
+        // ONLY main page: grow Yes
         yesScale += 0.25;
         yesBtn.style.transform = `scale(${yesScale})`;
-      } else {
-        stage--;
-        render();
+        return;
+      }
+
+      if (stage === 1 || stage === 2) {
+        // Emotional damage mode
+        noClicks++;
+
+        reaction.textContent =
+          sadResponses[Math.min(noClicks - 1, sadResponses.length - 1)];
+
+        // Fade text out slowly
+        reaction.style.opacity = 1;
+        setTimeout(() => {
+          reaction.style.opacity = 0.2;
+        }, 400);
+
+        // Yes gently pulses
+        yesBtn.classList.add("pulse");
+
+        // No gets quieter
+        noBtn.style.opacity = Math.max(0.25, 1 - noClicks * 0.15);
       }
     });
 
